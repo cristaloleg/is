@@ -6,7 +6,6 @@ import (
 
 // Is ...
 type Is interface {
-	Fail(string)
 	Nil(interface{})
 	OK(interface{})
 }
@@ -14,6 +13,7 @@ type Is interface {
 type is struct {
 	t        *testing.T
 	isStrict bool
+	text     string
 }
 
 // New ...
@@ -34,9 +34,8 @@ func NewStrict(t *testing.T) Is {
 	return is
 }
 
-// Fail ...
-func (i *is) Fail(text string) {
-	i.t.Logf(text)
+func (i *is) fail() {
+	i.t.Logf(i.text)
 	i.t.FailNow()
 }
 
@@ -48,7 +47,7 @@ func (i *is) Nil(object interface{}) {
 	}
 	i.t.Errorf("expected nil %v", object)
 	if i.isStrict {
-		i.Fail("")
+		i.fail()
 	}
 }
 
@@ -60,6 +59,6 @@ func (i *is) OK(object interface{}) {
 	}
 	i.t.Errorf("expected not nil %v", object)
 	if i.isStrict {
-		i.Fail("")
+		i.fail()
 	}
 }
