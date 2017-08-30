@@ -10,7 +10,7 @@ type Is interface {
 	NoErr(error)
 
 	Type(interface{}, interface{})
-	Impl(interface{})
+	Impl(impl interface{}, object interface{})
 	Match(string, interface{})
 	Pos(interface{})
 	Neg(interface{})
