@@ -1,5 +1,7 @@
 package is
 
+import "reflect"
+
 // Is is a main interface in this lib
 type Is interface {
 	Nil(interface{})
@@ -7,7 +9,7 @@ type Is interface {
 	Err(error)
 	NoErr(error)
 
-	Type(interface{})
+	Type(interface{}, interface{})
 	Impl(interface{})
 	Match(string, interface{})
 	Pos(interface{})
@@ -86,6 +88,7 @@ func (i *is) OK(obj interface{}) {
 	}
 }
 
+// Err ...
 func (i *is) Err(err error) {
 	if err != nil {
 		return
@@ -95,6 +98,8 @@ func (i *is) Err(err error) {
 		i.fail()
 	}
 }
+
+// NoErr ...
 func (i *is) NoErr(err error) {
 	if err == nil {
 		return
@@ -104,18 +109,31 @@ func (i *is) NoErr(err error) {
 		i.fail()
 	}
 }
-func (i *is) Type(interface{})                  {}
-func (i *is) Impl(interface{})                  {}
-func (i *is) Match(string, interface{})         {}
-func (i *is) Pos(interface{})                   {}
-func (i *is) Neg(interface{})                   {}
-func (i *is) Zero(interface{})                  {}
-func (i *is) Int(interface{})                   {}
-func (i *is) Float(interface{})                 {}
-func (i *is) NaN(interface{})                   {}
-func (i *is) Empty(interface{})                 {}
-func (i *is) Closed(interface{})                {}
-func (i *is) Filled(interface{})                {}
-func (i *is) Contains(interface{}, interface{}) {}
-func (i *is) Equal(interface{}, interface{})    {}
-func (i *is) NotEqual(interface{}, interface{}) {}
+
+// Type ...
+func (i *is) Type(ttype interface{}, object interface{}) {
+	x := reflect.TypeOf(ttype)
+	y := reflect.TypeOf(object)
+	if x == y {
+		return
+	}
+	i.t.Errorf("expected type %v, but got %v", x, y)
+	if i.isStrict {
+		i.fail()
+	}
+}
+
+func (i *is) Impl(impl interface{}, object interface{}) {}
+func (i *is) Match(string, interface{})                 {}
+func (i *is) Pos(interface{})                           {}
+func (i *is) Neg(interface{})                           {}
+func (i *is) Zero(interface{})                          {}
+func (i *is) Int(interface{})                           {}
+func (i *is) Float(interface{})                         {}
+func (i *is) NaN(interface{})                           {}
+func (i *is) Empty(interface{})                         {}
+func (i *is) Closed(interface{})                        {}
+func (i *is) Filled(interface{})                        {}
+func (i *is) Contains(interface{}, interface{})         {}
+func (i *is) Equal(interface{}, interface{})            {}
+func (i *is) NotEqual(interface{}, interface{})         {}
