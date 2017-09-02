@@ -1,6 +1,10 @@
 package is
 
-import "reflect"
+import (
+	"math"
+	"reflect"
+	"regexp"
+)
 
 // Is is a main interface in this lib
 type Is interface {
@@ -11,7 +15,7 @@ type Is interface {
 
 	Type(interface{}, interface{})
 	Impl(impl interface{}, object interface{})
-	Match(string, interface{})
+	Match(string, string)
 	Pos(interface{})
 	Neg(interface{})
 	Zero(interface{})
@@ -76,15 +80,29 @@ func (i *is) Nil(obj interface{}) {
 	}
 }
 
-// Nil ...
+// OK ...
 func (i *is) OK(obj interface{}) {
 	i.t.Helper()
-	if obj != nil {
+	if obj == nil {
+		i.t.Errorf("unexpected  nil")
+		if i.isStrict {
+			i.fail()
+		}
 		return
 	}
-	i.t.Errorf("expected not nil")
-	if i.isStrict {
-		i.fail()
+	switch value := obj.(type) {
+	case string:
+		if value == "" {
+			i.t.Errorf("unexpected empty string")
+		}
+	case bool:
+		if !value {
+			i.t.Errorf("unexpected false")
+		}
+	}
+
+	if obj == 0 {
+		i.t.Errorf("unexpected zero")
 	}
 }
 
@@ -104,7 +122,7 @@ func (i *is) NoErr(err error) {
 	if err == nil {
 		return
 	}
-	i.t.Errorf("expected nil, but got %v", err)
+	i.t.Errorf("unexpected error %v", err)
 	if i.isStrict {
 		i.fail()
 	}
@@ -124,16 +142,128 @@ func (i *is) Type(ttype interface{}, object interface{}) {
 }
 
 func (i *is) Impl(impl interface{}, object interface{}) {}
-func (i *is) Match(string, interface{})                 {}
-func (i *is) Pos(interface{})                           {}
-func (i *is) Neg(interface{})                           {}
-func (i *is) Zero(interface{})                          {}
-func (i *is) Int(interface{})                           {}
-func (i *is) Float(interface{})                         {}
-func (i *is) NaN(interface{})                           {}
-func (i *is) Empty(interface{})                         {}
-func (i *is) Closed(interface{})                        {}
-func (i *is) Filled(interface{})                        {}
-func (i *is) Contains(interface{}, interface{})         {}
-func (i *is) Equal(interface{}, interface{})            {}
-func (i *is) NotEqual(interface{}, interface{})         {}
+func (i *is) Match(pattern string, text string) {
+	r, err := regexp.Compile(pattern)
+	if err != nil {
+		i.t.FailNow()
+		return
+	}
+	if !r.MatchString(text) {
+		i.t.FailNow()
+	}
+}
+
+func (i *is) Pos(obj interface{}) {
+	switch value := obj.(type) {
+	case byte:
+	case int:
+	case int8:
+	case int16:
+	case int32:
+	case int64:
+	case uint:
+	case uint16:
+	case uint32:
+	case uint64:
+	case float32:
+	case float64:
+		if value < 0 {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	}
+}
+func (i *is) Neg(obj interface{}) {
+	switch value := obj.(type) {
+	case byte:
+	case int:
+	case int8:
+	case int16:
+	case int32:
+	case int64:
+	case uint:
+	case uint16:
+	case uint32:
+	case uint64:
+	case float32:
+	case float64:
+		if value > 0 {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	}
+}
+
+func (i *is) Zero(obj interface{}) {
+	switch value := obj.(type) {
+	case byte:
+	case int:
+	case int8:
+	case int16:
+	case int32:
+	case int64:
+	case uint:
+	case uint16:
+	case uint32:
+	case uint64:
+	case float32:
+	case float64:
+		if value != 0 {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	}
+}
+func (i *is) Int(obj interface{}) {
+	switch obj.(type) {
+	default:
+		if i.isStrict {
+			i.fail()
+		}
+	case byte:
+	case int:
+	case int8:
+	case int16:
+	case int32:
+	case int64:
+	case uint:
+	case uint16:
+	case uint32:
+	case uint64:
+		//
+	}
+}
+
+func (i *is) Float(obj interface{}) {
+	switch obj.(type) {
+	default:
+		if i.isStrict {
+			i.fail()
+		}
+	case float32:
+	case float64:
+		//
+	}
+}
+
+func (i *is) NaN(obj interface{}) {
+	switch value := obj.(type) {
+	case float32:
+	case float64:
+		if !math.IsNaN(value) {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	default:
+	}
+}
+func (i *is) Empty(interface{})                 {}
+func (i *is) Closed(interface{})                {}
+func (i *is) Filled(interface{})                {}
+func (i *is) Contains(interface{}, interface{}) {}
+func (i *is) Equal(interface{}, interface{})    {}
+func (i *is) NotEqual(interface{}, interface{}) {}
