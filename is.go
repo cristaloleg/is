@@ -4,6 +4,7 @@ import (
 	"math"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 // Is is a main interface in this lib
@@ -24,7 +25,6 @@ type Is interface {
 	NaN(interface{})
 	Empty(interface{})
 	Closed(interface{})
-	Filled(interface{})
 	Contains(interface{}, interface{})
 	Equal(interface{}, interface{})
 	NotEqual(interface{}, interface{})
@@ -261,9 +261,51 @@ func (i *is) NaN(obj interface{}) {
 	default:
 	}
 }
-func (i *is) Empty(interface{})                 {}
-func (i *is) Closed(interface{})                {}
-func (i *is) Filled(interface{})                {}
-func (i *is) Contains(interface{}, interface{}) {}
+func (i *is) Empty(obj interface{}) {
+	value := reflect.ValueOf(obj)
+	switch value.Kind() {
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice, reflect.String:
+		if value.Len() != 0 {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	default:
+	}
+}
+
+func (i *is) Closed(obj interface{}) {
+	value := reflect.ValueOf(obj)
+	switch value.Kind() {
+	case reflect.Chan:
+		_, ok := value.Recv()
+		if ok {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	default:
+	}
+}
+
+func (i *is) Contains(container interface{}, element interface{}) {
+	value := reflect.ValueOf(container)
+	switch value.Kind() {
+	case reflect.Array:
+
+	case reflect.Map:
+	case reflect.Slice:
+	case reflect.String:
+		s := container.(string)
+		e, ok := element.(string)
+		if !ok || !strings.Contains(s, e) {
+			if i.isStrict {
+				i.fail()
+			}
+		}
+	default:
+	}
+}
+
 func (i *is) Equal(interface{}, interface{})    {}
 func (i *is) NotEqual(interface{}, interface{}) {}
