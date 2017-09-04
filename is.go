@@ -71,6 +71,7 @@ func (i *is) fail() {
 // Nil ...
 func (i *is) Nil(obj interface{}) {
 	i.t.Helper()
+
 	if obj == nil {
 		return
 	}
@@ -83,6 +84,7 @@ func (i *is) Nil(obj interface{}) {
 // OK ...
 func (i *is) OK(obj interface{}) {
 	i.t.Helper()
+
 	if obj == nil {
 		i.t.Errorf("unexpected  nil")
 		if i.isStrict {
@@ -108,6 +110,8 @@ func (i *is) OK(obj interface{}) {
 
 // Err ...
 func (i *is) Err(err error) {
+	i.t.Helper()
+
 	if err != nil {
 		return
 	}
@@ -119,6 +123,8 @@ func (i *is) Err(err error) {
 
 // NoErr ...
 func (i *is) NoErr(err error) {
+	i.t.Helper()
+
 	if err == nil {
 		return
 	}
@@ -141,8 +147,12 @@ func (i *is) Type(ttype interface{}, object interface{}) {
 	}
 }
 
-func (i *is) Impl(impl interface{}, object interface{}) {}
+func (i *is) Impl(impl interface{}, object interface{}) {
+	i.t.Helper()
+}
 func (i *is) Match(pattern string, text string) {
+	i.t.Helper()
+
 	r, err := regexp.Compile(pattern)
 	if err != nil {
 		i.t.FailNow()
@@ -154,6 +164,8 @@ func (i *is) Match(pattern string, text string) {
 }
 
 func (i *is) Pos(obj interface{}) {
+	i.t.Helper()
+
 	switch value := obj.(type) {
 	case byte:
 	case int:
@@ -175,6 +187,8 @@ func (i *is) Pos(obj interface{}) {
 	}
 }
 func (i *is) Neg(obj interface{}) {
+	i.t.Helper()
+
 	switch value := obj.(type) {
 	case byte:
 	case int:
@@ -197,6 +211,8 @@ func (i *is) Neg(obj interface{}) {
 }
 
 func (i *is) Zero(obj interface{}) {
+	i.t.Helper()
+
 	switch value := obj.(type) {
 	case byte:
 	case int:
@@ -218,6 +234,8 @@ func (i *is) Zero(obj interface{}) {
 	}
 }
 func (i *is) Int(obj interface{}) {
+	i.t.Helper()
+
 	switch obj.(type) {
 	default:
 		if i.isStrict {
@@ -238,6 +256,8 @@ func (i *is) Int(obj interface{}) {
 }
 
 func (i *is) Float(obj interface{}) {
+	i.t.Helper()
+
 	switch obj.(type) {
 	default:
 		if i.isStrict {
@@ -250,6 +270,8 @@ func (i *is) Float(obj interface{}) {
 }
 
 func (i *is) NaN(obj interface{}) {
+	i.t.Helper()
+
 	switch value := obj.(type) {
 	case float32:
 	case float64:
@@ -262,6 +284,8 @@ func (i *is) NaN(obj interface{}) {
 	}
 }
 func (i *is) Empty(obj interface{}) {
+	i.t.Helper()
+
 	value := reflect.ValueOf(obj)
 	switch value.Kind() {
 	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice, reflect.String:
@@ -275,6 +299,8 @@ func (i *is) Empty(obj interface{}) {
 }
 
 func (i *is) Closed(obj interface{}) {
+	i.t.Helper()
+
 	value := reflect.ValueOf(obj)
 	switch value.Kind() {
 	case reflect.Chan:
@@ -289,6 +315,8 @@ func (i *is) Closed(obj interface{}) {
 }
 
 func (i *is) Contains(container interface{}, element interface{}) {
+	i.t.Helper()
+
 	value := reflect.ValueOf(container)
 	switch value.Kind() {
 	case reflect.Array:
@@ -307,5 +335,10 @@ func (i *is) Contains(container interface{}, element interface{}) {
 	}
 }
 
-func (i *is) Equal(interface{}, interface{})    {}
-func (i *is) NotEqual(interface{}, interface{}) {}
+func (i *is) Equal(interface{}, interface{}) {
+	i.t.Helper()
+}
+
+func (i *is) NotEqual(interface{}, interface{}) {
+	i.t.Helper()
+}
