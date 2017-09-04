@@ -26,6 +26,7 @@ type Is interface {
 	Empty(interface{})
 	Closed(interface{})
 	Contains(interface{}, interface{})
+	Subset(interface{}, interface{})
 	Equal(interface{}, interface{})
 	NotEqual(interface{}, interface{})
 }
@@ -319,10 +320,27 @@ func (i *is) Contains(container interface{}, element interface{}) {
 
 	value := reflect.ValueOf(container)
 	switch value.Kind() {
-	case reflect.Array:
+	case reflect.Array, reflect.Slice:
+		for j := 0; j < value.Len(); j++ {
+			if reflect.DeepEqual(value.Index(j).Interface(), element) {
+				if i.isStrict {
+					i.fail()
+				}
+				return
+			}
+		}
 
 	case reflect.Map:
-	case reflect.Slice:
+		keys := value.MapKeys()
+		for j := 0; j < len(keys); j++ {
+			if !reflect.DeepEqual(keys[j].Interface(), element) {
+				if i.isStrict {
+					i.fail()
+				}
+				return
+			}
+		}
+
 	case reflect.String:
 		s := container.(string)
 		e, ok := element.(string)
@@ -332,6 +350,30 @@ func (i *is) Contains(container interface{}, element interface{}) {
 			}
 		}
 	default:
+	}
+}
+
+func (i *is) Subset(superset interface{}, subset interface{}) {
+	i.t.Helper()
+
+	a := reflect.TypeOf(superset).Kind()
+	b := reflect.TypeOf(subset).Kind()
+
+	if (a != reflect.Array && a != reflect.Slice) || (b != reflect.Array && b != reflect.Slice) {
+		return
+	}
+
+	value := reflect.ValueOf(subset)
+	for j := 0; j < value.Len(); j++ {
+		elem := value.Index(j).Interface()
+		for j := 0; j < value.Len(); j++ {
+			if reflect.DeepEqual(value.Index(j).Interface(), elem) {
+				if i.isStrict {
+					i.fail()
+				}
+				return
+			}
+		}
 	}
 }
 
